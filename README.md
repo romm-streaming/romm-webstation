@@ -30,7 +30,8 @@ ghcr.io/romm-streaming/romm-webstation
 | `dev-<sha>-<pkg>` | Immutable. One exact build of that broker commit with that package set. |
 
 `<pkg>` is the first eight characters of the md5 of
-[`package_versions.txt`](package_versions.txt), a listing of every apt, pip
+[`package_versions.txt`](https://github.com/romm-streaming/romm-webstation/blob/package-versions/package_versions.txt) (on the
+`package-versions` branch), a listing of every apt, pip
 and npm package in the image plus the version each emulator resolved to at
 build time. A weekly rebuild that changes nothing produces no new tag.
 
@@ -108,9 +109,10 @@ weekly check or a pull request asked for it.
 1. **Build** on one runner. The runner first reclaims disk with
    `ci/scripts/free-disk.sh`, then builds the Dockerfile and pushes the
    result to GHCR **by digest only**, with no tag. Nothing a user can pull
-   changes yet. Nothing is cached between builds: every emulator resolved to
-   "latest" has to be looked up fresh anyway, and the base image moves
-   weekly.
+   changes yet. Dolphin, Eden and Cemu are the exception: each is compiled
+   once per upstream version into
+   `ghcr.io/romm-streaming/romm-webstation-emulators` and copied in from
+   there, so only a new emulator release pays for a compile.
 2. **Test** on a second runner. It pulls that digest, generates
    `package_versions.txt` for it with syft plus the in image versions
    manifest, runs the smoke suite under `ci/` against a live container, and
@@ -119,9 +121,9 @@ weekly check or a pull request asked for it.
 3. **Publish** on a third runner, only if the tests passed. It points the real
    tags at the tested digest with `docker buildx imagetools create`, which
    is a manifest operation and uploads nothing. On stable builds it then
-   commits the new `package_versions.txt` to the default branch. Commits
-   made with the workflow token do not start other workflows, which is what
-   we want: this image is already built, tested and tagged.
+   commits the new `package_versions.txt` to the `package-versions` branch.
+   `main` requires pull requests and the workflow token cannot be exempted
+   from that, so the listing lives on its own branch.
 4. **Cleanup** deletes the untagged digest when a candidate passed its tests
    but was deliberately not published: a dry run, a pull request, or a weekly
    rebuild that changed nothing. A candidate that **failed** its tests is left
@@ -228,7 +230,6 @@ unset, the Dockerfile picks the latest release itself.
 Dockerfile               the image, single file, builder stages for Dolphin, Eden and Cemu
 root/                    files layered over the base image: s6 services, nginx template,
                          emulator defaults, desktop launchers, the MOTD branding
-package_versions.txt     what the current :latest contains, committed by the pipeline
 ci/                      smoke tests and the scripts the workflows call
 .github/workflows/       build.yml, push.yml, check-upstream.yml, package-check.yml, pr.yml
 ```

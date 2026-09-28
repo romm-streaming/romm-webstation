@@ -2,8 +2,8 @@
 # default branch rebuilds both channels and publishes them regardless of
 # whether the package hash moved: the Dockerfile or the overlay did.
 #
-# Bot commits of package_versions.txt are made with the workflow token and
-# never trigger this. Documentation only changes are ignored by path.
+# Bot commits of package_versions.txt go to the package-versions branch,
+# not here. Documentation only changes are ignored by path.
 name: Push to main
 run-name: "build stable + dev (push ${{ github.sha }})"
 
@@ -15,7 +15,6 @@ on:
       - "LICENSE"
       - ".editorconfig"
       - ".gitignore"
-      - "package_versions.txt"
 
 permissions:
   contents: write

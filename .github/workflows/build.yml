@@ -16,6 +16,7 @@
 #            it in a browser) and a report only vulnerability scan
 #   publish  points the real tags at the tested digest with imagetools, no
 #            re-upload, and on stable builds commits package_versions.txt
+#            to the package-versions branch
 #   cleanup  drops the untagged digest when a passing candidate was not published
 #
 # Triggered by check-upstream.yml and package-check.yml through
@@ -322,6 +323,16 @@ jobs:
       # The package hash is what makes the immutable tag. It is the md5 of
       # syft's table plus the image's own versions manifest, so a new
       # DuckStation AppImage moves it even though syft never sees AppImages.
+      # main is protected and the workflow token cannot bypass that, so the
+      # recorded listing lives on its own branch; see the publish job.
+      - name: Fetch the recorded package versions
+        run: |
+          if git fetch --depth=1 origin package-versions; then
+            git show FETCH_HEAD:package_versions.txt > package_versions.txt
+          else
+            echo "::warning::no package-versions branch yet; treating every package as changed"
+          fi
+
       - name: Record package versions
         id: packages
         run: |
@@ -469,9 +480,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
+      # An orphan branch holding only package_versions.txt. main's ruleset
+      # requires pull requests and the workflow token cannot be exempted;
+      # this branch only forbids force pushes and deletion, which a plain
+      # commit on top never needs.
       - uses: actions/checkout@v7
+        if: inputs.channel == 'stable'
         with:
-          ref: ${{ github.event.repository.default_branch }}
+          ref: package-versions
 
       - uses: docker/login-action@v4
         with:
