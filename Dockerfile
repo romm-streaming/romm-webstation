@@ -670,6 +670,12 @@ COPY --from=dolphin / /
 COPY --from=eden / /
 COPY /root /
 
+# let absolute mouse moves reach games that hold a pointer lock
+RUN --mount=type=bind,source=ci/patches/selkies_pointer_lock.py,target=/selkies_pointer_lock.py \
+  SELKIES_DIR=$(/lsiopy/bin/python3 -c "import os, selkies; print(os.path.dirname(selkies.__file__))") && \
+  /lsiopy/bin/python3 /selkies_pointer_lock.py "${SELKIES_DIR}/input_handler.py" && \
+  rm -f "${SELKIES_DIR}"/__pycache__/input_handler.*.pyc
+
 # ports and volumes
 EXPOSE 3001
 VOLUME /config
