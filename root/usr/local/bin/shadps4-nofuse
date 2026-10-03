@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
 
-# The shadPS4 launcher downloads AppImages, which need FUSE to run, and the
-# container has none. Unpack each new build once and swap the bare binary in
-# under the AppImage's name, so the launcher and the broker both run it as is.
-# Runs as svc-shadps4-nofuse rather than a job of the DE script, so s6 keeps
-# exactly one copy across DE restarts.
+# AppImages need FUSE and the container has none, so unpack each new build once
+# and swap the bare binary in under the AppImage name the launcher and broker run.
 
 VERSIONS_DIR="${HOME}/.local/share/shadPS4QtLauncher/versions"
 TARGET_APPIMAGE="Shadps4-sdl.AppImage"
@@ -20,9 +17,8 @@ while true; do
       cd "$folder" || exit
       chmod +x "$TARGET_APPIMAGE"
       ./"$TARGET_APPIMAGE" --appimage-extract >/dev/null 2>&1
-      # A container stop TERMs this mid-swap, so keep it to one rename with
-      # the marker right behind: a kill between the two would leave the bare
-      # binary unmarked and run with --appimage-extract every pass.
+      # One rename, then the marker: a stop landing between them leaves the bare
+      # binary unmarked, and it gets run with --appimage-extract every pass.
       if [[ -f "squashfs-root/$INTERNAL_BIN_PATH" ]] &&
         mv -f "squashfs-root/$INTERNAL_BIN_PATH" "$TARGET_APPIMAGE"; then
         : >"$MARKER_FILE"
