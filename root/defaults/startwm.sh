@@ -16,14 +16,19 @@ monitor_shadps4_no_fuse() {
   local INTERNAL_BIN_PATH="usr/bin/shadps4"
   local MARKER_FILE=".nofuse_ready"
   local PARENT_PID=$$
-  local _pid _comm _state ppid
+  local stat
   while true; do
-    # Once this script exits (openbox quit, svc-de restarted) the loop is
-    # reparented, and without this check every restart left one more behind.
+    # Once this script exits (openbox or selkies-desktop quit) the loop is
+    # reparented, and nothing else stops it, so each DE restart would leave
+    # one more behind.
     # Comparing the ppid rather than probing $$ stays right if that pid is reused.
     # The plain `exec dbus-launch` below keeps this pid, so it still counts as alive.
-    read -r _pid _comm _state ppid _ < "/proc/${BASHPID}/stat" || return
-    [[ "$ppid" == "$PARENT_PID" ]] || return
+    # The line is "pid (comm) state ppid ..." and comm may hold spaces, so the
+    # ppid is taken from after the last ") ".
+    read -r stat < "/proc/${BASHPID}/stat" || return
+    stat=${stat##*) }
+    stat=${stat#* }
+    [[ "${stat%% *}" == "$PARENT_PID" ]] || return
     shopt -s nullglob
     for folder in "$VERSIONS_DIR"/*; do
       if [[ -d "$folder" ]]; then
@@ -33,14 +38,22 @@ monitor_shadps4_no_fuse() {
         if [[ -f "$folder/$TARGET_APPIMAGE" ]]; then
           (
             cd "$folder" || exit
+            # The previous session's loop can still be mid-extract until it
+            # notices it was reparented; never share squashfs-root with it.
+            exec 9<.
+            flock -n 9 || exit
+            [[ -f "$MARKER_FILE" ]] && exit
             chmod +x "$TARGET_APPIMAGE"
             ./"$TARGET_APPIMAGE" --appimage-extract >/dev/null 2>&1
-            if [[ -f "squashfs-root/$INTERNAL_BIN_PATH" ]]; then
-              rm "$TARGET_APPIMAGE"
-              mv "squashfs-root/$INTERNAL_BIN_PATH" "$TARGET_APPIMAGE"
-              rm -rf squashfs-root
-              touch "$MARKER_FILE"
+            # svc-de's finish TERMs the session, so keep the swap to one rename
+            # with the marker right behind it: a kill between the two would
+            # leave the bare binary unmarked and run with --appimage-extract
+            # every pass.
+            if [[ -f "squashfs-root/$INTERNAL_BIN_PATH" ]] &&
+              mv -f "squashfs-root/$INTERNAL_BIN_PATH" "$TARGET_APPIMAGE"; then
+              : >"$MARKER_FILE"
             fi
+            rm -rf squashfs-root
           )
         fi
       fi
