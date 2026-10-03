@@ -15,7 +15,14 @@ monitor_shadps4_no_fuse() {
   local TARGET_APPIMAGE="Shadps4-sdl.AppImage"
   local INTERNAL_BIN_PATH="usr/bin/shadps4"
   local MARKER_FILE=".nofuse_ready"
+  local PARENT_PID=$$
+  local _pid _comm _state ppid
   while true; do
+    # Once this script exits (labwc quit, svc-de restarted) the loop is
+    # reparented, and without this check every restart left one more behind.
+    # Comparing the ppid rather than probing $$ stays right if that pid is reused.
+    read -r _pid _comm _state ppid _ < "/proc/${BASHPID}/stat" || return
+    [[ "$ppid" == "$PARENT_PID" ]] || return
     shopt -s nullglob
     for folder in "$VERSIONS_DIR"/*; do
       if [[ -d "$folder" ]]; then
