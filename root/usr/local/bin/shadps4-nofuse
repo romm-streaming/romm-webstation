@@ -15,6 +15,14 @@ while true; do
     [[ -d "$folder" && ! -f "$folder/$MARKER_FILE" && -f "$folder/$TARGET_APPIMAGE" ]] || continue
     (
       cd "$folder" || exit
+      # Restarting this service orphans an extraction in flight; keep the next
+      # instance out of squashfs-root until it lands.
+      exec 9<.
+      flock -n 9 || exit
+      [[ -f "$MARKER_FILE" ]] && exit
+      # Only a type 2 AppImage has "AI\2" at byte 8. Never run anything else: the
+      # bare binary takes --appimage-extract as a game path and boots shadPS4.
+      cmp -s -i 8:0 -n 3 "$TARGET_APPIMAGE" <(printf 'AI\002') || exit
       chmod +x "$TARGET_APPIMAGE"
       ./"$TARGET_APPIMAGE" --appimage-extract >/dev/null 2>&1
       # One rename, then the marker: a stop landing between them leaves the bare
