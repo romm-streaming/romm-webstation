@@ -88,6 +88,7 @@ services:
 | `-e PUID` / `-e PGID` | The uid and gid the desktop, emulators and broker run as. |
 | `-e SUBFOLDER` | URL prefix everything is served under. Default `/streaming/`, must match your reverse proxy. |
 | `-e BROKER_SECRET` | Shared secret RomM sends as `X-Broker-Secret`. Without it the broker refuses to start. |
+| `-e EDEN_LEGACY=true` | Optional. Swaps Eden for upstream's legacy build of the same version, for CPUs without AVX2 (pre-Haswell, pre-Ryzen). Downloaded to `/config/.local/share/eden-legacy` on first start, about 70 MB. |
 | `--shm-size=1gb` | Recommended for every desktop image. |
 
 Open `https://yourhost:3001/streaming/` once to run each emulator's first time
