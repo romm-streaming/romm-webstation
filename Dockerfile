@@ -421,6 +421,7 @@ RUN --mount=type=secret,id=github_token --mount=type=bind,source=ci/scripts/gh-a
   mv \
     squashfs-root \
     /opt/azahar && \
+  chmod -R a+rX /opt/azahar && \
   ln -s \
     /opt/azahar/AppRun \
     /usr/bin/azahar && \
@@ -451,6 +452,7 @@ RUN --mount=type=secret,id=github_token --mount=type=bind,source=ci/scripts/gh-a
   mv \
     squashfs-root \
     /opt/duckstation && \
+  chmod -R a+rX /opt/duckstation && \
   ln -s \
     /opt/duckstation/AppRun \
     /usr/bin/duckstation-qt && \
@@ -467,6 +469,7 @@ RUN --mount=type=secret,id=github_token --mount=type=bind,source=ci/scripts/gh-a
   mv \
     squashfs-root \
     /opt/flycast && \
+  chmod -R a+rX /opt/flycast && \
   ln -s \
     /opt/flycast/AppRun \
     /usr/bin/flycast && \
@@ -519,6 +522,7 @@ RUN --mount=type=secret,id=github_token --mount=type=bind,source=ci/scripts/gh-a
   mv \
     squashfs-root \
     /opt/xenia && \
+  chmod -R a+rX /opt/xenia && \
   ln -s \
     /opt/xenia/AppRun \
     /usr/bin/xenia && \
@@ -544,6 +548,7 @@ RUN --mount=type=secret,id=github_token --mount=type=bind,source=ci/scripts/gh-a
   mv \
     AppDir \
     /opt/rpcs3 && \
+  chmod -R a+rX /opt/rpcs3 && \
   ln -s \
     /opt/rpcs3/AppRun \
     /usr/bin/rpcs3 && \
@@ -564,6 +569,7 @@ RUN --mount=type=secret,id=github_token --mount=type=bind,source=ci/scripts/gh-a
   mv \
     squashfs-root \
     /opt/xemu && \
+  chmod -R a+rX /opt/xemu && \
   ln -s \
     /opt/xemu/AppRun \
     /usr/bin/xemu && \
@@ -579,6 +585,7 @@ RUN --mount=type=secret,id=github_token --mount=type=bind,source=ci/scripts/gh-a
   mv \
     AppDir \
     /opt/esde && \
+  chmod -R a+rX /opt/esde && \
   echo "**** install shadps4qt ****" && \
   mkdir /tmp/shadps4 && \
   SHADPS4_VERSION=$(/gh-api "repos/shadps4-emu/shadps4-qtlauncher/releases" \
@@ -595,6 +602,7 @@ RUN --mount=type=secret,id=github_token --mount=type=bind,source=ci/scripts/gh-a
   mv \
     squashfs-root \
     /opt/shadps4 && \
+  chmod -R a+rX /opt/shadps4 && \
   PKG_URL=$(/gh-api "repos/AzaharPlus/shadPS4Plus/releases/latest" \
     | jq -er '.assets[] | select(.name | endswith("-linux.zip")) | .browser_download_url') && \
   echo "${PKG_URL}" > /usr/share/webstation/versions.d/shadps4-pkg-extractor && \
