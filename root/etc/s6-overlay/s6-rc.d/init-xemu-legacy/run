@@ -72,7 +72,8 @@ else
 fi
 
 # the AppImage bundles libslirp but the PPA build links the system copy, which
-# the image does not ship yet; once it does, the fetched copy is dropped
+# images built before libslirp0 joined the Dockerfile lack; on those it is
+# fetched here, and dropped again once the container runs a newer image
 if ldconfig -p | grep -q 'libslirp\.so\.0 '; then
   rm -rf "${LEGACY_DIR}/lib"
 elif [[ -d "${LEGACY_DIR}/root" && ! -e "${LEGACY_DIR}/lib/libslirp.so.0" ]]; then
