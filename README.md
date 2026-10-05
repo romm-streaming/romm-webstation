@@ -198,6 +198,13 @@ offer, and checks:
   nginx the only public listener, dev mode is off, the selkies master token
   and the broker secret appear in no response or log, and a container
   started without `BROKER_SECRET` refuses to bring the broker up.
+- **Legacy builds.** Without `EDEN_LEGACY` and `XEMU_LEGACY` the bundled
+  Eden and xemu are left alone. A second container with both set swaps in
+  the downloaded builds, keeps xemu's argv[0] as `/opt/xemu/AppRun` so the
+  broker can find it, leaves no unresolved libraries, and lists both in
+  `webstation-versions`. This check downloads from git.eden-emu.dev and
+  Launchpad, so it runs on pull requests and with
+  `WEBSTATION_LEGACY_TESTS=1` locally, not on release builds.
 
 Run it against any image on a machine with docker:
 
