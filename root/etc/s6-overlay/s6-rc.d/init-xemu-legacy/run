@@ -10,7 +10,6 @@ APPRUN=/opt/xemu/AppRun
 SHADOWED=/opt/xemu/AppRun.bundled
 LEGACY_DIR=/config/.local/share/xemu-legacy
 PPA=https://ppa.launchpadcontent.net/mborgerson/xemu/ubuntu
-ARCHIVE=http://archive.ubuntu.com/ubuntu
 
 if [[ "${XEMU_LEGACY,,}" != "true" ]]; then
   exit 0
@@ -36,7 +35,8 @@ deb_entry() {
 # downloads a .deb, checks it against the index hash and unpacks it into $4
 fetch_deb() {
   local base=$1 file=$2 sha=$3 dest=$4
-  curl -fsSL --retry 3 --max-time 600 -o "${dest}/pkg.deb" "${base}/${file}" && \
+  curl -fsSL --retry 3 --connect-timeout 20 --speed-limit 10000 --speed-time 60 \
+    -o "${dest}/pkg.deb" "${base}/${file}" && \
     echo "${sha}  ${dest}/pkg.deb" | sha256sum -c --quiet - && \
     dpkg-deb -x "${dest}/pkg.deb" "${dest}/root" && \
     rm -f "${dest}/pkg.deb"
@@ -53,10 +53,6 @@ if read -r PPA_VERSION PPA_FILE PPA_SHA < <(deb_entry "${PPA}" xemu); then
     # staged next to LEGACY_DIR so the final mv is a rename on the same filesystem
     STAGE=$(mktemp -d /config/.local/share/.xemu-legacy.XXXXXX)
     if fetch_deb "${PPA}" "${PPA_FILE}" "${PPA_SHA}" "${STAGE}"; then
-      # keep a previously fetched libslirp, the .deb does not carry it
-      if [[ -d "${LEGACY_DIR}/lib" ]]; then
-        mv "${LEGACY_DIR}/lib" "${STAGE}/lib"
-      fi
       echo "${PPA_VERSION}" > "${STAGE}/version"
       rm -rf "${LEGACY_DIR}"
       mv "${STAGE}" "${LEGACY_DIR}"
@@ -71,41 +67,27 @@ else
   echo "[xemu-legacy] WARNING: could not read the xemu PPA index for ${CODENAME}"
 fi
 
-# the AppImage bundles libslirp but the PPA build links the system copy, which
-# images built before libslirp0 joined the Dockerfile lack; on those it is
-# fetched here, and dropped again once the container runs a newer image
-if ldconfig -p | grep -q 'libslirp\.so\.0 '; then
-  rm -rf "${LEGACY_DIR}/lib"
-elif [[ -d "${LEGACY_DIR}/root" && ! -e "${LEGACY_DIR}/lib/libslirp.so.0" ]]; then
-  echo "[xemu-legacy] fetching libslirp0, the image does not provide it"
-  STAGE=$(mktemp -d /config/.local/share/.xemu-legacy-lib.XXXXXX)
-  if read -r _ SLIRP_FILE SLIRP_SHA < <(deb_entry "${ARCHIVE}" libslirp0) && \
-     fetch_deb "${ARCHIVE}" "${SLIRP_FILE}" "${SLIRP_SHA}" "${STAGE}"; then
-    rm -rf "${LEGACY_DIR}/lib"
-    mkdir -p "${LEGACY_DIR}/lib"
-    cp -a "${STAGE}"/root/usr/lib/x86_64-linux-gnu/libslirp.so.0* "${LEGACY_DIR}/lib/"
-    lsiown -R abc:abc "${LEGACY_DIR}/lib"
-  else
-    echo "[xemu-legacy] WARNING: could not fetch libslirp0"
-  fi
-  rm -rf "${STAGE}"
-fi
-
 # an older PPA build still beats the bundled one, which will not start on these CPUs
 if [[ ! -x "${LEGACY_DIR}/root/usr/bin/xemu" ]]; then
   echo "[xemu-legacy] WARNING: no legacy xemu available, keeping the bundled build"
   exit 0
 fi
-if ! ldconfig -p | grep -q 'libslirp\.so\.0 ' && [[ ! -e "${LEGACY_DIR}/lib/libslirp.so.0" ]]; then
-  echo "[xemu-legacy] WARNING: libslirp is missing, keeping the bundled build"
+# dpkg-deb -x ignores Depends, so a library the image lacks would only show at launch
+MISSING=$(ldd "${LEGACY_DIR}/root/usr/bin/xemu" | awk '/not found/ { print $1 }' | paste -sd ' ')
+if [[ -n "${MISSING}" ]]; then
+  echo "[xemu-legacy] WARNING: legacy xemu needs ${MISSING}, which the image lacks, keeping the bundled build"
   exit 0
 fi
 # kept aside rather than deleted so a restart of this container finds it again
 if [[ ! -e "${SHADOWED}" && ! -L "${SHADOWED}" ]]; then
   mv "${APPRUN}" "${SHADOWED}"
 fi
-# replaces AppRun itself, which the broker, the desktop entry and /usr/bin/xemu all start
-printf '#!/bin/sh\nLD_LIBRARY_PATH=%s${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} exec %s "$@"\n' \
-  "${LEGACY_DIR}/lib" "${LEGACY_DIR}/root/usr/bin/xemu" > "${APPRUN}"
+# replaces AppRun itself, which the broker, the desktop entry and /usr/bin/xemu all
+# start. exec -a keeps argv[0] as the path that was started: the broker matches
+# the process's argv against what it spawned to find and reap it.
+# shellcheck disable=SC2016 # expanded by the wrapper, not here
+printf '#!/bin/bash\nexec -a "$0" %s "$@"\n' "${LEGACY_DIR}/root/usr/bin/xemu" > "${APPRUN}"
 chmod 755 "${APPRUN}"
+# webstation-versions reports the build that actually runs
+cp "${LEGACY_DIR}/version" /usr/share/webstation/versions.d/xemu-legacy
 echo "[xemu-legacy] ${APPRUN} now runs xemu $(cat "${LEGACY_DIR}/version") from the PPA"
