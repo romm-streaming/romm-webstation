@@ -151,5 +151,6 @@ def test_exit_tears_down(station: Station, desktop: dict) -> None:
         assert r.json()["status"] == "exited"
         status = c.get("/api/session/status", headers=station.secret_headers).json()
         context = c.get("/api/session/context", params={"token": desktop["token"]})
-    assert status == {"active": False}
+    assert status["active"] is False
+    assert status["last_exit"]["session_id"] == desktop["response"]["session_id"]
     assert context.status_code in (401, 409)

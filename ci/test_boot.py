@@ -58,7 +58,9 @@ def test_status_reports_no_session(station: Station) -> None:
     with station.client() as c:
         r = c.get("/api/session/status", headers=station.secret_headers)
     assert r.status_code == 200
-    assert r.json() == {"active": False}
+    body = r.json()
+    assert body["active"] is False
+    assert body["last_exit"] is None
 
 
 def test_all_services_active(station: Station) -> None:
@@ -93,6 +95,16 @@ def test_desktop_launchers_resolve(station: Station) -> None:
         if r.returncode != 0:
             missing.append(binary)
     assert not missing, f"launcher binaries missing: {missing}"
+
+
+def test_opt_readable_by_abc(station: Station) -> None:
+    """The broker launches emulators as abc, which must be able to reach them.
+
+    Some AppImages extract with a 0700 root (xemu, xenia and shadPS4 did), which
+    leaves the emulator behind a directory abc cannot enter.
+    """
+    blocked = station.sh(r"find /opt \( -type d ! -perm -o+rx \) -o \( -type f ! -perm -o+r \) | head -5")
+    assert not blocked.strip(), f"not readable by abc: {blocked}"
 
 
 def test_versions_manifest_complete(station: Station) -> None:

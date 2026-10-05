@@ -648,6 +648,8 @@ RUN --mount=type=secret,id=github_token --mount=type=bind,source=ci/scripts/gh-a
     "romm-broker:  ${BROKER_RELEASE}" \
     "Build date:   ${BUILD_DATE}" \
     > /build_version && \
+  echo "**** make extracted appimages readable by abc ****" && \
+  chmod -R a+rX /opt && \
   echo "**** cleanup ****" && \
   apt-get autoclean && \
   rm -rf \
