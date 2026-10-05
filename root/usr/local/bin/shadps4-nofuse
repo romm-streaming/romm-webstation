@@ -12,24 +12,31 @@ SLEEP_TIME="${1:-5}"
 shopt -s nullglob
 while true; do
   for folder in "$VERSIONS_DIR"/*; do
-    [[ -d "$folder" && ! -f "$folder/$MARKER_FILE" && -f "$folder/$TARGET_APPIMAGE" ]] || continue
+    # The marker is a hard link to the swapped binary, so a new build unzipped over
+    # it (the launcher's Pre-release update) no longer matches and gets swapped too.
+    [[ -d "$folder" && -f "$folder/$TARGET_APPIMAGE" ]] || continue
+    [[ "$folder/$TARGET_APPIMAGE" -ef "$folder/$MARKER_FILE" ]] && continue
     (
       cd "$folder" || exit
       # Restarting this service orphans an extraction in flight; keep the next
       # instance out of squashfs-root until it lands.
       exec 9<.
       flock -n 9 || exit
-      [[ -f "$MARKER_FILE" ]] && exit
+      [[ "$TARGET_APPIMAGE" -ef "$MARKER_FILE" ]] && exit
       # Only a type 2 AppImage has "AI\2" at byte 8. Never run anything else: the
       # bare binary takes --appimage-extract as a game path and boots shadPS4.
-      cmp -s -i 8:0 -n 3 "$TARGET_APPIMAGE" <(printf 'AI\002') || exit
+      if ! cmp -s -i 8:0 -n 3 "$TARGET_APPIMAGE" <(printf 'AI\002'); then
+        # an empty marker from an older version of this script: already swapped
+        [[ -f "$MARKER_FILE" ]] && ln -f "$TARGET_APPIMAGE" "$MARKER_FILE"
+        exit
+      fi
       chmod +x "$TARGET_APPIMAGE"
       ./"$TARGET_APPIMAGE" --appimage-extract >/dev/null 2>&1
       # One rename, then the marker: a stop landing between them leaves the bare
-      # binary unmarked, and it gets run with --appimage-extract every pass.
+      # binary unmarked, and the magic check above turns it away every pass.
       if [[ -f "squashfs-root/$INTERNAL_BIN_PATH" ]] &&
         mv -f "squashfs-root/$INTERNAL_BIN_PATH" "$TARGET_APPIMAGE"; then
-        : >"$MARKER_FILE"
+        ln -f "$TARGET_APPIMAGE" "$MARKER_FILE"
       fi
       rm -rf squashfs-root
     )
