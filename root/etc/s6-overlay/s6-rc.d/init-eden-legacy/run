@@ -23,19 +23,26 @@ if [[ "$(cat "${LEGACY_DIR}/version" 2>/dev/null)" != "${EDEN_VERSION}" ]]; then
   fi
   # staged next to LEGACY_DIR so the final mv is a rename on the same filesystem
   STAGE=$(mktemp -d /config/.local/share/.eden-legacy.XXXXXX)
+  lsiown abc:abc "${STAGE}"
+  # extracting runs the AppImage's own runtime, so it runs as abc rather than root.
+  # curl gives up on a stalled transfer rather than on a slow link.
   if URL=$(curl -fsSL --max-time 30 \
         "https://git.eden-emu.dev/api/v1/repos/eden-emu/eden/releases/tags/${EDEN_VERSION}" \
         | jq -er '.assets[] | select(.name | endswith("-legacy-clang-pgo.AppImage")) | .browser_download_url') && \
-     curl -fsSL --retry 3 --max-time 600 -o "${STAGE}/eden.AppImage" "${URL}" && \
-     chmod +x "${STAGE}/eden.AppImage" && \
-     (cd "${STAGE}" && ./eden.AppImage --appimage-extract >/dev/null); then
+     curl -fsSL --retry 3 --connect-timeout 20 --speed-limit 10000 --speed-time 60 \
+       -o "${STAGE}/eden.AppImage" "${URL}" && \
+     chmod 755 "${STAGE}/eden.AppImage" && \
+     (cd "${STAGE}" && s6-setuidgid abc ./eden.AppImage --appimage-extract >/dev/null); then
     rm -rf "${LEGACY_DIR}"
     mkdir -p "${LEGACY_DIR}"
     # newer runtimes extract to AppDir with squashfs-root as a symlink to it
-    mv "$(readlink -f "${STAGE}/squashfs-root")" "${LEGACY_DIR}/app"
-    echo "${EDEN_VERSION}" > "${LEGACY_DIR}/version"
+    if mv "$(readlink -f "${STAGE}/squashfs-root")" "${LEGACY_DIR}/app"; then
+      echo "${EDEN_VERSION}" > "${LEGACY_DIR}/version"
+      echo "[eden-legacy] installed legacy Eden ${EDEN_VERSION}"
+    else
+      echo "[eden-legacy] WARNING: could not install legacy Eden ${EDEN_VERSION}"
+    fi
     lsiown -R abc:abc "${LEGACY_DIR}"
-    echo "[eden-legacy] installed legacy Eden ${EDEN_VERSION}"
   else
     echo "[eden-legacy] WARNING: could not fetch legacy Eden ${EDEN_VERSION}"
   fi
@@ -57,4 +64,6 @@ fi
 # a wrapper, not a symlink: AppRun locates its bundle from its own path
 printf '#!/bin/sh\nexec %s "$@"\n' "${LEGACY_DIR}/app/AppRun" > "${BUNDLED}"
 chmod 755 "${BUNDLED}"
+# webstation-versions reports the build that actually runs
+cp "${LEGACY_DIR}/version" /usr/share/webstation/versions.d/eden-legacy
 echo "[eden-legacy] ${BUNDLED} now runs the legacy build"
