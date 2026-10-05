@@ -74,3 +74,4 @@ jobs:
       channel: stable
       publish: false
       reason: pr
+      legacy_tests: true

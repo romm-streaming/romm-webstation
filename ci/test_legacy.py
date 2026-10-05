@@ -1,11 +1,13 @@
 """EDEN_LEGACY and XEMU_LEGACY: the pre-AVX2 builds swapped in at boot.
 
-The swap downloads both builds from upstream, so it runs in a container of its
-own and only when slow tests are selected.
+The swap downloads both builds from git.eden-emu.dev and Launchpad, so it runs
+in a container of its own and only with WEBSTATION_LEGACY_TESTS=1. pr.yml sets
+it; release builds leave it off so an upstream outage cannot block a publish.
 """
 
 from __future__ import annotations
 
+import os
 import subprocess
 import time
 import uuid
@@ -18,8 +20,16 @@ XEMU_APPRUN = "/opt/xemu/AppRun"
 EDEN_LEGACY = "/config/.local/share/eden-legacy"
 XEMU_LEGACY = "/config/.local/share/xemu-legacy"
 # the session the broker launches emulators into (romm-broker emulators/base.py)
-LAUNCH_ENV = ["-e", "HOME=/config", "-e", "DISPLAY=:0", "-e", "WAYLAND_DISPLAY=wayland-0",
-              "-e", "XDG_RUNTIME_DIR=/config/.XDG"]
+LAUNCH_ENV = [
+    "-e",
+    "HOME=/config",
+    "-e",
+    "DISPLAY=:0",
+    "-e",
+    "WAYLAND_DISPLAY=wayland-0",
+    "-e",
+    "XDG_RUNTIME_DIR=/config/.XDG",
+]
 
 
 def test_bundled_builds_untouched_by_default(station: Station) -> None:
@@ -31,6 +41,8 @@ def test_bundled_builds_untouched_by_default(station: Station) -> None:
 
 @pytest.fixture(scope="module")
 def legacy(image: str) -> Station:
+    if os.environ.get("WEBSTATION_LEGACY_TESTS") != "1":
+        pytest.skip("downloads from upstream; set WEBSTATION_LEGACY_TESTS=1")
     st = start_container(
         image,
         "ci-secret",
@@ -60,7 +72,7 @@ def test_legacy_eden_swapped(legacy: Station) -> None:
 def test_legacy_xemu_swapped(legacy: Station) -> None:
     assert "[xemu-legacy] /opt/xemu/AppRun now runs xemu" in legacy.logs()
     legacy.exec("test", "-L", f"{XEMU_APPRUN}.bundled")
-    missing = legacy.sh(f"LD_LIBRARY_PATH={XEMU_LEGACY}/lib ldd {XEMU_LEGACY}/root/usr/bin/xemu | grep 'not found' || true")
+    missing = legacy.sh(f"ldd {XEMU_LEGACY}/root/usr/bin/xemu | grep 'not found' || true")
     assert not missing.strip(), f"legacy xemu has unresolved libraries: {missing}"
 
 
@@ -70,8 +82,11 @@ def test_legacy_xemu_keeps_argv0(legacy: Station) -> None:
     legacy.sh("pkill -x xemu || true")
     pid_cmd = f"pgrep -u abc -f '^{XEMU_APPRUN}( |$)' | head -1"
     try:
-        subprocess.run(["docker", "exec", "-d", "-u", "abc", *LAUNCH_ENV, legacy.name, XEMU_APPRUN],
-                       check=True, timeout=30)
+        subprocess.run(
+            ["docker", "exec", "-d", "-u", "abc", *LAUNCH_ENV, legacy.name, XEMU_APPRUN],
+            check=True,
+            timeout=30,
+        )
         pid = ""
         deadline = time.monotonic() + 20
         while not pid and time.monotonic() < deadline:
