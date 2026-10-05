@@ -72,7 +72,9 @@ def test_legacy_eden_swapped(legacy: Station) -> None:
 def test_legacy_xemu_swapped(legacy: Station) -> None:
     assert "[xemu-legacy] /opt/xemu/AppRun now runs xemu" in legacy.logs()
     legacy.exec("test", "-L", f"{XEMU_APPRUN}.bundled")
-    missing = legacy.sh(f"ldd {XEMU_LEGACY}/root/usr/bin/xemu | grep 'not found' || true")
+    missing = legacy.sh(
+        f"LD_LIBRARY_PATH={XEMU_LEGACY}/lib ldd {XEMU_LEGACY}/root/usr/bin/xemu | grep 'not found' || true"
+    )
     assert not missing.strip(), f"legacy xemu has unresolved libraries: {missing}"
 
 
