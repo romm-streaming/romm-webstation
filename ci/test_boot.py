@@ -19,6 +19,7 @@ EXPECTED_SERVICES = {
     "svc-nginx",
     "svc-pulseaudio",
     "svc-selkies",
+    "svc-shadps4-nofuse",
 }
 
 # Emulators the Dockerfile compiles or unpacks from an upstream "latest"

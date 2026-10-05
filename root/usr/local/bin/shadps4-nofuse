@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+# AppImages need FUSE and the container has none, so unpack each new build once
+# and swap the bare binary in under the AppImage name the launcher and broker run.
+
+VERSIONS_DIR="${HOME}/.local/share/shadPS4QtLauncher/versions"
+TARGET_APPIMAGE="Shadps4-sdl.AppImage"
+INTERNAL_BIN_PATH="usr/bin/shadps4"
+MARKER_FILE=".nofuse_ready"
+SLEEP_TIME="${1:-5}"
+
+shopt -s nullglob
+while true; do
+  for folder in "$VERSIONS_DIR"/*; do
+    # The marker is a hard link to the swapped binary, so a new build unzipped over
+    # it (the launcher's Pre-release update) no longer matches and gets swapped too.
+    [[ -d "$folder" && -f "$folder/$TARGET_APPIMAGE" ]] || continue
+    [[ "$folder/$TARGET_APPIMAGE" -ef "$folder/$MARKER_FILE" ]] && continue
+    (
+      cd "$folder" || exit
+      # Restarting this service orphans an extraction in flight; keep the next
+      # instance out of squashfs-root until it lands.
+      exec 9<.
+      flock -n 9 || exit
+      [[ "$TARGET_APPIMAGE" -ef "$MARKER_FILE" ]] && exit
+      # Only a type 2 AppImage has "AI\2" at byte 8. Never run anything else: the
+      # bare binary takes --appimage-extract as a game path and boots shadPS4.
+      if ! cmp -s -i 8:0 -n 3 "$TARGET_APPIMAGE" <(printf 'AI\002'); then
+        # an empty marker from an older version of this script: already swapped
+        [[ -f "$MARKER_FILE" ]] && ln -f "$TARGET_APPIMAGE" "$MARKER_FILE"
+        exit
+      fi
+      chmod +x "$TARGET_APPIMAGE"
+      ./"$TARGET_APPIMAGE" --appimage-extract >/dev/null 2>&1
+      # One rename, then the marker: a stop landing between them leaves the bare
+      # binary unmarked, and the magic check above turns it away every pass.
+      if [[ -f "squashfs-root/$INTERNAL_BIN_PATH" ]] &&
+        mv -f "squashfs-root/$INTERNAL_BIN_PATH" "$TARGET_APPIMAGE"; then
+        ln -f "$TARGET_APPIMAGE" "$MARKER_FILE"
+      fi
+      rm -rf squashfs-root
+    )
+  done
+  sleep "$SLEEP_TIME"
+done
