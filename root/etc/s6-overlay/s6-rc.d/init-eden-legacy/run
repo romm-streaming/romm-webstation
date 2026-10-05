@@ -64,6 +64,9 @@ fi
 # a wrapper, not a symlink: AppRun locates its bundle from its own path
 printf '#!/bin/sh\nexec %s "$@"\n' "${LEGACY_DIR}/app/AppRun" > "${BUNDLED}"
 chmod 755 "${BUNDLED}"
-# webstation-versions reports the build that actually runs
-cp "${LEGACY_DIR}/version" /usr/share/webstation/versions.d/eden-legacy
+# webstation-versions reports the build that actually runs; images without the
+# manifest (linuxserver/webstation:romm) have nothing to update
+if [[ -d /usr/share/webstation/versions.d ]]; then
+  cp "${LEGACY_DIR}/version" /usr/share/webstation/versions.d/eden-legacy
+fi
 echo "[eden-legacy] ${BUNDLED} now runs the legacy build"
