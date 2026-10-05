@@ -1280,6 +1280,7 @@ libsigc++-2.0-0v5                                                             2.
 libsimpleini1t64                                                              4.22+dfsg-1ubuntu2                      deb                         
 libsixel1                                                                     1.10.5-1build1                          deb                         
 libslang2                                                                     2.3.3-5build1                           deb                         
+libslirp0                                                                     4.9.1-1ubuntu1.1                        deb                         
 libsm6                                                                        2:1.2.6-1build1                         deb                         
 libsmartcols1                                                                 2.41.3-3ubuntu2.2                       deb                         
 libsnapd-glib-2-1                                                             1.72-0ubuntu3                           deb                         
@@ -1806,8 +1807,8 @@ gzdoom                                   https://github.com/ZDoom/gzdoom/release
 melonds                                  1.1
 modrinth                                 v0.21.6
 romm-broker                              v0.14.0
-rpcs3                                    https://github.com/RPCS3/rpcs3-binaries-linux/releases/download/build-ba4a4b561edb562d9fd58268edaf927fa436f408/rpcs3-v0.0.43-20217-ba4a4b56_linux64.AppImage
+rpcs3                                    https://github.com/RPCS3/rpcs3-binaries-linux/releases/download/build-30ee6cc358180de6cb36cd961ac6f26f7bd3c10c/rpcs3-v0.0.43-20224-30ee6cc3_linux64.AppImage
 shadps4-pkg-extractor                    https://github.com/AzaharPlus/shadPS4Plus/releases/download/PKG_EXTRACTOR_1_1/ShadPs4Plus-PkgExtractor-1.1-linux.zip
-shadps4-qtlauncher                       shadPS4QtLauncher-2026-10-05-7097bea4ee727735b150cae4ec87e0737babdd84
+shadps4-qtlauncher                       shadPS4QtLauncher-2026-10-05-1040649ec089279172e4855ba65c7382774b9977
 xemu                                     https://github.com/xemu-project/xemu/releases/download/pre-release/xemu-0.8.136-53-g478b4f4961-x86_64.AppImage
-xenia-edge                               a5532a0
+xenia-edge                               fad70b5
