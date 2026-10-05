@@ -354,6 +354,7 @@ RUN --mount=type=secret,id=github_token --mount=type=bind,source=ci/scripts/gh-a
     libsdl2-2.0-0 \
     libshaderc1 \
     libsimpleini1t64 \
+    libslirp0 \
     libssl3t64 \
     libusb-1.0-0 \
     libwxgtk-gl3.2-1t64 \

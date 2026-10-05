@@ -52,6 +52,10 @@ on:
         description: Compile Dolphin, Eden and Cemu again even if their cached images exist
         type: boolean
         default: false
+      legacy_tests:
+        description: Also test the EDEN_LEGACY and XEMU_LEGACY swaps, which download from upstream
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       broker_ref:
@@ -70,6 +74,9 @@ on:
         type: string
         default: call
       rebuild_emulators:
+        type: boolean
+        default: false
+      legacy_tests:
         type: boolean
         default: false
     # A called workflow sees only the secrets its caller passes. The stable
@@ -391,6 +398,7 @@ jobs:
         env:
           WEBSTATION_IMAGE: romm-webstation:candidate
           WEBSTATION_ARTIFACTS: ${{ github.workspace }}/ci/artifacts
+          WEBSTATION_LEGACY_TESTS: ${{ inputs.legacy_tests && '1' || '' }}
         run: |
           cd ci
           python -m pytest -v --junitxml=artifacts/junit.xml

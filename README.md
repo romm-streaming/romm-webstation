@@ -88,6 +88,8 @@ services:
 | `-e PUID` / `-e PGID` | The uid and gid the desktop, emulators and broker run as. |
 | `-e SUBFOLDER` | URL prefix everything is served under. Default `/streaming/`, must match your reverse proxy. |
 | `-e BROKER_SECRET` | Shared secret RomM sends as `X-Broker-Secret`. Without it the broker refuses to start. |
+| `-e EDEN_LEGACY=true` | Optional. Swaps Eden for upstream's legacy build of the same version, for CPUs without AVX2 (pre-Haswell, pre-Ryzen). Downloaded to `/config/.local/share/eden-legacy` on first start: a 70 MB download, about 300 MB once extracted. |
+| `-e XEMU_LEGACY=true` | Optional. Swaps xemu for the build from the xemu maintainer's Ubuntu PPA, for CPUs without AVX2 (pre-Haswell, pre-Ryzen). Downloaded to `/config/.local/share/xemu-legacy` on first start, about 16 MB. |
 | `--shm-size=1gb` | Recommended for every desktop image. |
 
 Open `https://yourhost:3001/streaming/` once to run each emulator's first time
@@ -196,6 +198,13 @@ offer, and checks:
   nginx the only public listener, dev mode is off, the selkies master token
   and the broker secret appear in no response or log, and a container
   started without `BROKER_SECRET` refuses to bring the broker up.
+- **Legacy builds.** Without `EDEN_LEGACY` and `XEMU_LEGACY` the bundled
+  Eden and xemu are left alone. A second container with both set swaps in
+  the downloaded builds, keeps xemu's argv[0] as `/opt/xemu/AppRun` so the
+  broker can find it, leaves no unresolved libraries, and lists both in
+  `webstation-versions`. This check downloads from git.eden-emu.dev and
+  Launchpad, so it runs on pull requests and with
+  `WEBSTATION_LEGACY_TESTS=1` locally, not on release builds.
 
 Run it against any image on a machine with docker:
 
