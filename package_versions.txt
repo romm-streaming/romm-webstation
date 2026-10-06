@@ -1736,7 +1736,7 @@ walk-up-path                                                                  3.
 watchdog                                                                      6.0.0                                   python                      
 watchfiles                                                                    1.3.0                                   python                      
 websockets                                                                    17.1                                    python                      
-webstation-broker                                                             0.14.0                                  python                      
+webstation-broker                                                             0.14.1                                  python                      
 wheel                                                                         0.45.1                                  python                      
 wheel                                                                         0.46.3                                  python                      
 which                                                                         2.0.2                                   npm                         
@@ -1806,9 +1806,9 @@ freedoom                                 https://github.com/freedoom/freedoom/re
 gzdoom                                   https://github.com/ZDoom/gzdoom/releases/download/g4.14.2/gzdoom_4.14.2_amd64.deb
 melonds                                  1.1
 modrinth                                 v0.21.6
-romm-broker                              v0.14.0
+romm-broker                              v0.14.1
 rpcs3                                    https://github.com/RPCS3/rpcs3-binaries-linux/releases/download/build-3e7477107a356c5d1fae92a7dc3c8d5953984782/rpcs3-v0.0.43-20226-3e747710_linux64.AppImage
 shadps4-pkg-extractor                    https://github.com/AzaharPlus/shadPS4Plus/releases/download/PKG_EXTRACTOR_1_1/ShadPs4Plus-PkgExtractor-1.1-linux.zip
 shadps4-qtlauncher                       shadPS4QtLauncher-2026-10-05-29de8facf2348a1ffd461aa52b25cc23a488e255
 xemu                                     https://github.com/xemu-project/xemu/releases/download/pre-release/xemu-0.8.136-53-g478b4f4961-x86_64.AppImage
-xenia-edge                               fad70b5
+xenia-edge                               125ad5d
