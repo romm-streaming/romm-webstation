@@ -1699,7 +1699,7 @@ azahar                                   https://github.com/azahar-emu/azahar/re
 cemu                                     v2.6
 dolphin                                  2609a
 dosbox-staging                           v0.83.0
-duckstation                              https://github.com/stenzek/duckstation/releases/download/latest/DuckStation-x64.AppImage 2026-10-06T09:49:36Z
+duckstation                              https://github.com/stenzek/duckstation/releases/download/latest/DuckStation-x64.AppImage 2026-10-11T02:59:35Z
 eden                                     v0.2.1
 es-de                                    https://gitlab.com/es-de/emulationstation-de/-/package_files/288156961/download
 flips                                    https://github.com/Sir-Walrus/Flips/releases/download/v198/flips-linux.zip
@@ -1709,8 +1709,8 @@ gzdoom                                   https://github.com/ZDoom/gzdoom/release
 melonds                                  1.1
 modrinth                                 v0.21.9
 romm-broker                              v0.15.0
-rpcs3                                    https://github.com/RPCS3/rpcs3-binaries-linux/releases/download/build-dfc486fc6b436edd6693cb38fd449ff18df8bd4d/rpcs3-v0.0.43-20280-dfc486fc_linux64.AppImage
+rpcs3                                    https://github.com/RPCS3/rpcs3-binaries-linux/releases/download/build-2ba2f75bcea7ef6bdd687046c7fcfb790faf9853/rpcs3-v0.0.43-20284-2ba2f75b_linux64.AppImage
 shadps4-pkg-extractor                    https://github.com/AzaharPlus/shadPS4Plus/releases/download/PKG_EXTRACTOR_1_1/ShadPs4Plus-PkgExtractor-1.1-linux.zip
 shadps4-qtlauncher                       shadPS4QtLauncher-2026-10-10-df4b6ebffd4829c3bdbcd765ea44cf5a814970e8
 xemu                                     https://github.com/xemu-project/xemu/releases/download/pre-release/xemu-0.8.136-53-g478b4f4961-x86_64.AppImage
-xenia-edge                               9a84c1d
+xenia-edge                               1be1bd2
