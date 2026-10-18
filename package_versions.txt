@@ -1715,8 +1715,8 @@ gzdoom                                   https://github.com/ZDoom/gzdoom/release
 melonds                                  1.1
 modrinth                                 v0.21.10
 romm-broker                              v0.15.1
-rpcs3                                    https://github.com/RPCS3/rpcs3-binaries-linux/releases/download/build-7385417164814701b766bad4b13f9201e993971c/rpcs3-v0.0.43-20331-73854171_linux64.AppImage
+rpcs3                                    https://github.com/RPCS3/rpcs3-binaries-linux/releases/download/build-2348d8c37cb60314d7b1b1dc116d7cc8868fcd28/rpcs3-v0.0.43-20333-2348d8c3_linux64.AppImage
 shadps4-pkg-extractor                    https://github.com/AzaharPlus/shadPS4Plus/releases/download/PKG_EXTRACTOR_1_1/ShadPs4Plus-PkgExtractor-1.1-linux.zip
 shadps4-qtlauncher                       shadPS4QtLauncher-2026-10-17-3d4f8d2ec00b830c6fb5459f2de6213168370c17
 xemu                                     https://github.com/xemu-project/xemu/releases/download/pre-release/xemu-0.8.137-15-g8fc3208697-x86_64.AppImage
-xenia-edge                               3121ff9
+xenia-edge                               e4df59c
