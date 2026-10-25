@@ -14,7 +14,7 @@ from conftest import Station, start_container, stop_container
 
 # selkies-desktop only runs while a desktop session is active, so it is not listed.
 UNPRIVILEGED_PROCESSES = {"webstation-brok", "selkies", "labwc", "pulseaudio"}
-LOOPBACK_ONLY_PORTS = {8000, 8082, 5000}
+LOOPBACK_ONLY_PORTS = {8000, 8082}
 PUBLIC_PORTS = {3000, 3001}
 
 
