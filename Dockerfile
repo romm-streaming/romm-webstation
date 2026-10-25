@@ -303,8 +303,7 @@ ENV TITLE="Webstation" \
     SELKIES_RATE_CONTROL_MODE=cbr \
     PIXELFLUX_WAYLAND=true \
     SUBFOLDER="/streaming/" \
-    DOOMWADDIR="/config" \
-    PIXELFLUX_CU=5000
+    DOOMWADDIR="/config"
 
 RUN --mount=type=secret,id=github_token --mount=type=bind,source=ci/scripts/gh-api.sh,target=/gh-api \
   mkdir -p /usr/share/webstation/versions.d && \
