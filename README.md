@@ -149,8 +149,38 @@ record step will fail while the tags have already moved.
 | `push.yml` | every push to `main` | Rebuilds and publishes both `latest` and `dev`, whether or not the package hash moved, because the Dockerfile or overlay changed. Documentation only changes and the bot's own `package_versions.txt` commits do not trigger it. |
 | `check-upstream.yml` | every fifteen minutes | Reads romm-broker's latest release and `master` head, compares each with the `broker-ref` label on `:latest` and `:dev`, and dispatches a build for whichever differs. Skips a channel that already has a build queued or running. |
 | `package-check.yml` | weekly, Sunday morning UTC | Dispatches a stable build of the current release so base image, apt and emulator updates get picked up. |
-| `pr.yml` | pull requests | Lints the shell, workflow and Python pieces, then runs the full build and smoke suite with publishing off. Fork PRs get the lint job only, because a fork's token cannot push the candidate for the test runner to pull. |
+| `pr.yml` | pull requests | Lints the shell, workflow and Python pieces, then runs the full build and smoke suite with publishing off. Fork PRs get the lint job only, because a fork's token cannot push the candidate for the test runner to pull; see [Fork pull requests](#fork-pull-requests). |
 | `build.yml` | by hand | `Actions > Build image > Run workflow`. Pick the channel, give a release tag or commit sha, and turn publish off for a dry run. |
+
+### Fork pull requests
+
+The `main` ruleset requires `lint` and `build / Test`. A fork PR only gets
+`lint`, so it cannot merge on its own. Running `build.yml` by hand does not
+fix that: it builds a branch of this repository (the default branch unless you
+pick another), not the PR, and reports a check named `Test`.
+
+To run the full suite on the fork's exact commit, a maintainer copies that
+commit into a branch here and opens a draft PR from it. This is not a
+formality. An in-repo PR runs the workflow files, `ci/` scripts, `Dockerfile`
+and overlay from the PR's own commit, with `contents: write` and
+`packages: write`, so it can push to this repository and publish to GHCR.
+Read the whole fork diff, workflows and CI scripts included, before pushing
+it, and push the SHA you reviewed rather than whatever the fork head is now:
+
+```sh
+gh pr view <n> -R romm-streaming/romm-webstation --json headRefOid
+git fetch origin refs/pull/<n>/head
+git push origin <reviewed-sha>:refs/heads/fork-pr-<n>
+gh pr create -R romm-streaming/romm-webstation --draft --base main \
+  --head fork-pr-<n> --title "CI for #<n> (do not merge)" --body "Runs build / Test for #<n>."
+```
+
+Check runs attach to the commit, so once `build / Test` passes on the draft
+it also shows on the fork PR. Before merging, confirm the fork PR head is
+still `<reviewed-sha>` (`gh pr view <n> --json headRefOid`). If the fork has
+pushed again, or main moved and the PR had to be updated, review and push the
+new head the same way. Merge the fork PR, then close the draft and delete the
+`fork-pr-<n>` branch.
 
 Polling is what lets this repository live anywhere without a token from the
 broker repository. `check-upstream.yml` also accepts a `repository_dispatch`

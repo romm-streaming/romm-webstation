@@ -3,8 +3,19 @@
 #
 # The build step only runs for branches in this repository. A fork's token
 # cannot push the candidate image to GHCR, which the test runner needs to
-# pull it from, so fork PRs get the lint job and a maintainer runs build.yml
-# by hand with publish off if they want the full check.
+# pull it from, so fork PRs get the lint job only and the required
+# "build / Test" check never reports. Running build.yml by hand does not help:
+# it builds a branch of this repository (the default branch unless you pick
+# another), not the PR, and reports a check named "Test".
+#
+# To test a fork PR, a maintainer reads the whole diff (workflows, ci/,
+# Dockerfile and overlay included), pushes the reviewed head commit by SHA to
+# a branch in this repository and opens a draft PR from it. That draft runs
+# the fork's own workflow and build code with contents and packages write
+# access. Checks attach to the commit, so the "build / Test" result on the
+# draft also satisfies the fork PR. Confirm the fork PR head still equals the
+# reviewed SHA before merging, then close the draft and delete the branch.
+# See README.md.
 name: Pull request
 run-name: "pr #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}"
 
