@@ -79,8 +79,8 @@ certifi                                                                       20
 cffi                                                                          2.1.1                                         python                      
 chalk                                                                         5.6.2                                         npm                         
 chownr                                                                        3.0.0                                         npm                         
-chromium                                                                      156.0.8078.73-1xtradeb1.2604.1                deb                         
-chromium-common                                                               156.0.8078.73-1xtradeb1.2604.1                deb                         
+chromium                                                                      156.0.8078.108-1xtradeb1.2604.1               deb                         
+chromium-common                                                               156.0.8078.108-1xtradeb1.2604.1               deb                         
 ci-info                                                                       4.4.0                                         npm                         
 cidr-regex                                                                    4.1.3                                         npm                         
 cli-columns                                                                   4.0.0                                         npm                         
@@ -168,6 +168,7 @@ fastest-levenshtein                                                           1.
 fdir                                                                          6.5.0                                         npm                         
 featherpad                                                                    1.6.3-0ubuntu1                                deb                         
 ffmpeg                                                                        4.4.2                                         binary                      
+ffmpeg                                                                        6.1.1                                         binary                      
 ffmpeg                                                                        7.1.1                                         binary                      
 ffmpeg                                                                        7.1.5                                         binary                      
 ffmpeg                                                                        8.1.1                                         binary                      
@@ -1578,6 +1579,7 @@ qemu-utils                                                                    1:
 qrcode-terminal                                                               0.12.0                                        npm                         
 qt6-wayland                                                                   6.10.2-4                                      deb                         
 qtbase                                                                        6.8.2                                         binary                      
+qtbase                                                                        6.8.3                                         binary                      
 read                                                                          4.1.0                                         npm                         
 read-cmd-shim                                                                 5.0.0                                         npm                         
 read-package-json-fast                                                        4.0.0                                         npm                         
@@ -1631,6 +1633,7 @@ sudo                                                                          1.
 sudo-common                                                                   1.2ubuntu                                     deb                         
 supports-color                                                                9.4.0                                         npm                         
 systemd                                                                       255.4-1ubuntu8.18                             deb                         
+systemd                                                                       255.4-1ubuntu8.19                             deb                         
 systemd                                                                       257.13-1~deb13u1                              deb                         
 systemd                                                                       259.9-0ubuntu0.1                              deb                         
 systemd-sysv                                                                  259.9-0ubuntu0.1                              deb                         
@@ -1743,6 +1746,7 @@ flips                                    https://github.com/Sir-Walrus/Flips/rel
 flycast                                  https://github.com/flyinghead/flycast/releases/download/v2.7/flycast-x86_64-2.7.AppImage
 freedoom                                 https://github.com/freedoom/freedoom/releases/download/v0.13.0/freedoom-0.13.0.zip
 gzdoom                                   https://github.com/ZDoom/gzdoom/releases/download/g4.14.2/gzdoom_4.14.2_amd64.deb
+lichii                                   build-366 sha256:e93906edc3467bdd0f389d343191eac4992453343134a597f18117a56c4c82c3
 melonds                                  1.1
 modrinth                                 v0.23.4
 romm-broker                              v0.15.3
@@ -1750,4 +1754,4 @@ rpcs3                                    https://github.com/RPCS3/rpcs3-binaries
 shadps4-pkg-extractor                    https://github.com/AzaharPlus/shadPS4Plus/releases/download/PKG_EXTRACTOR_1_1/ShadPs4Plus-PkgExtractor-1.1-linux.zip
 shadps4-qtlauncher                       shadPS4QtLauncher-2026-11-19-1c35b9b147a8e67474fba6500bdfc309bef6f8e1
 xemu                                     https://github.com/xemu-project/xemu/releases/download/pre-release/xemu-0.8.139-19-g711b416840-x86_64.AppImage
-xenia-edge                               fe89a16
+xenia-edge                               5317a83
