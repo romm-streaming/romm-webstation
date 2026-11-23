@@ -1,0 +1,4 @@
+#!/bin/sh
+# Lichii ships as an unpacked tarball under /opt/lichii, not a mounted
+# AppImage, so it needs neither FUSE nor --appimage-extract.
+exec /opt/lichii/AppRun "$@"
