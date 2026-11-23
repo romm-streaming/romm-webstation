@@ -40,9 +40,9 @@ The desktop ships every emulator the broker can drive, with controller
 profiles and sane defaults pre-seeded on first run:
 
 Azahar, Cemu, Dolphin, DOSBox Staging, DuckStation, Eden, ES-DE, Flycast,
-GZDoom and Freedoom, MAME, melonDS, Modrinth App, PCSX2, PPSSPP, RetroArch,
-RPCS3, ScummVM, shadPS4, xemu, Xenia Edge, plus DarkPlaces, EDuke32, Flips,
-a Chromium browser and a file manager.
+GZDoom and Freedoom, Lichii (experimental), MAME, melonDS, Modrinth App, PCSX2,
+PPSSPP, RetroArch, RPCS3, ScummVM, shadPS4, xemu, Xenia Edge, plus DarkPlaces,
+EDuke32, Flips, a Chromium browser and a file manager.
 
 Dolphin, Eden and Cemu are compiled from source at build time; the rest
 install from Ubuntu PPAs, upstream AppImages or release tarballs. Inside a
@@ -110,8 +110,8 @@ weekly check or a pull request asked for it.
 1. **Build** on one runner. The runner first reclaims disk with
    `ci/scripts/free-disk.sh`, then builds the Dockerfile and pushes the
    result to GHCR **by digest only**, with no tag. Nothing a user can pull
-   changes yet. Dolphin, Eden and Cemu are the exception: each is compiled
-   once per upstream version into
+   changes yet. Dolphin, Eden, Cemu and Lichii are the exception: each is
+   built once per upstream version into
    `ghcr.io/romm-streaming/romm-webstation-emulators` and copied in from
    there, so only a new emulator release pays for a compile.
 2. **Test** on a second runner. It pulls that digest, generates
@@ -267,7 +267,7 @@ unset, the Dockerfile picks the latest release itself.
 ## Repository layout
 
 ```
-Dockerfile               the image, single file, builder stages for Dolphin, Eden and Cemu
+Dockerfile               the image, single file, builder stages for Dolphin, Eden, Cemu and Lichii
 root/                    files layered over the base image: s6 services, nginx template,
                          emulator defaults, desktop launchers, the MOTD branding
 package_versions.txt     what the current :latest contains, committed by the pipeline

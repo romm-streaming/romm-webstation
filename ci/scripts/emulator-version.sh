@@ -1,7 +1,7 @@
 #!/bin/sh
 # Print the upstream version the Dockerfile compiles for one emulator.
 #
-#   emulator-version.sh dolphin|eden|cemu
+#   emulator-version.sh dolphin|eden|cemu|lichii
 #
 # build.yml runs this to name the cached emulator image before it builds
 # anything; the Dockerfile runs it only when no version was passed in, which
@@ -21,6 +21,11 @@ case "${1:?emulator name}" in
     ;;
   eden)
     curl -fsSL 'https://git.eden-emu.dev/api/v1/repos/eden-emu/eden/releases/latest' | jq -er '.tag_name'
+    ;;
+  lichii)
+    # Downloaded, not compiled; lichii-release.sh holds the release guards.
+    release=$("${here}/lichii-release.sh")
+    echo "${release%% *}"
     ;;
   *)
     echo "unknown emulator: $1" >&2

@@ -37,6 +37,7 @@ EXPECTED_VERSION_ENTRIES = {
     "flycast",
     "freedoom",
     "gzdoom",
+    "lichii",
     "melonds",
     "modrinth",
     "romm-broker",
@@ -143,3 +144,23 @@ def test_compiled_emulator_links(station: Station, binary: str) -> None:
     assert r.returncode == 0, f"ldd {binary} failed: {r.stdout}{r.stderr}"
     unresolved = [line.strip() for line in r.stdout.splitlines() if "not found" in line]
     assert not unresolved, f"{binary} has unresolved libraries: {unresolved}"
+
+
+def test_lichii_installed(station: Station) -> None:
+    """Lichii is unpacked under /opt/lichii, recorded, and links.
+
+    The version entry is what moves package_versions.txt, and with it the
+    published tag, when a new Lichii release lands. The wrapper only execs
+    AppRun, so the binary behind it is checked with ldd instead of launched:
+    the tarball bundles Qt and most libraries but takes libGL, libusb and
+    glibc from the base image.
+    """
+    version = station.sh("cat /usr/share/webstation/versions.d/lichii").strip()
+    assert re.fullmatch(r"[A-Za-z0-9._-]+ sha256:[0-9a-f]{64}", version), version
+    assert "/opt/lichii/AppRun" in station.sh("cat /usr/bin/lichii")
+    station.exec("test", "-x", "/usr/bin/lichii")
+    station.exec("test", "-x", "/opt/lichii/AppRun")
+    r = station.exec("ldd", "/opt/lichii/usr/bin/lichii", check=False)
+    assert r.returncode == 0, f"ldd lichii failed: {r.stdout}{r.stderr}"
+    unresolved = [line.strip() for line in r.stdout.splitlines() if "not found" in line]
+    assert not unresolved, f"lichii has unresolved libraries: {unresolved}"

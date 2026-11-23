@@ -1,10 +1,39 @@
 # Dolphin, Eden and Cemu are compiled from source, which is most of the build
-# time. CI builds each one once per upstream version as its own small image
-# (the *-out stages) and passes it in through these; a plain local build
-# leaves them at their defaults and compiles all three here.
+# time, and Lichii is a large release download. CI builds each one once per
+# upstream version as its own small image (the *-out stages) and passes it in
+# through these; a plain local build leaves them at their defaults and builds
+# all four here.
 ARG DOLPHIN_IMAGE=dolphin-out
 ARG EDEN_IMAGE=eden-out
 ARG CEMU_IMAGE=cemu-out
+ARG LICHII_IMAGE=lichii-out
+
+FROM ghcr.io/linuxserver/baseimage-selkies:ubunturesolute AS lichii-build
+
+# Lichii follows its latest GitHub release like the other emulators, with
+# guards in ci/scripts/lichii-release.sh: no drafts or prereleases, at least
+# a day old, and the tarball must match the sha256 digest GitHub lists for the
+# asset. LICHII_VERSION set to a known-good tag skips the lookup.
+ARG LICHII_VERSION
+RUN --mount=type=secret,id=github_token \
+  --mount=type=bind,source=ci/scripts/gh-api.sh,target=/ci/gh-api.sh \
+  --mount=type=bind,source=ci/scripts/emulator-version.sh,target=/ci/emulator-version.sh \
+  --mount=type=bind,source=ci/scripts/lichii-release.sh,target=/ci/lichii-release.sh \
+  --mount=type=bind,source=ci/scripts/lichii-install.sh,target=/ci/lichii-install.sh \
+  echo "**** install lichii ****" && \
+  LICHII_VERSION=${LICHII_VERSION:-$(/ci/emulator-version.sh lichii)} && \
+  LICHII_RELEASE=$(/ci/lichii-release.sh "${LICHII_VERSION}") && \
+  LICHII_SHA256=${LICHII_RELEASE#* } && \
+  mkdir -p /tmp/lichii /root-out/opt /root-out/usr/share/webstation/versions.d && \
+  curl -fsSL -o \
+    /tmp/lichii/lichii.tar.gz \
+    "https://github.com/zortos293/Lichii/releases/download/${LICHII_VERSION}/lichii-linux-x86_64.tar.gz" && \
+  /ci/lichii-install.sh /tmp/lichii/lichii.tar.gz "${LICHII_SHA256}" /root-out/opt/lichii && \
+  echo "${LICHII_VERSION} sha256:${LICHII_SHA256}" > /root-out/usr/share/webstation/versions.d/lichii && \
+  rm -rf /tmp/lichii
+
+FROM scratch AS lichii-out
+COPY --from=lichii-build /root-out/ /
 
 FROM ghcr.io/linuxserver/baseimage-selkies:ubunturesolute AS dolphin-build
 
@@ -279,6 +308,7 @@ COPY --from=cemu-build /root-out/ /
 FROM ${DOLPHIN_IMAGE} AS dolphin
 FROM ${EDEN_IMAGE} AS eden
 FROM ${CEMU_IMAGE} AS cemu
+FROM ${LICHII_IMAGE} AS lichii
 
 # runtime stage
 FROM ghcr.io/linuxserver/baseimage-selkies:ubunturesolute
@@ -670,6 +700,7 @@ RUN --mount=type=secret,id=github_token --mount=type=bind,source=ci/scripts/gh-a
 COPY --from=cemu / /
 COPY --from=dolphin / /
 COPY --from=eden / /
+COPY --from=lichii / /
 COPY /root /
 
 # ports and volumes
